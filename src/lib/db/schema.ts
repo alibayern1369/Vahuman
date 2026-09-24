@@ -411,6 +411,62 @@ export const storeSettings = pgTable("store_settings", {
     .notNull(),
 });
 
+/**
+ * Guest/customer carts. Browser only stores cart cookie token + item IDs/qty via API.
+ * Prices are always resolved server-side.
+ */
+export const carts = pgTable(
+  "carts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    guestToken: text("guest_token"),
+    userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("carts_guest_token_uidx").on(table.guestToken),
+    uniqueIndex("carts_user_id_uidx").on(table.userId),
+  ],
+);
+
+export const cartItems = pgTable(
+  "cart_items",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    cartId: uuid("cart_id")
+      .notNull()
+      .references(() => carts.id, { onDelete: "cascade" }),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    variantId: uuid("variant_id").references(() => productVariants.id, {
+      onDelete: "cascade",
+    }),
+    quantity: integer("quantity").default(1).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("cart_items_unique_line_uidx").on(
+      table.cartId,
+      table.productId,
+      table.variantId,
+    ),
+    index("cart_items_cart_idx").on(table.cartId),
+  ],
+);
+
 export type User = typeof user.$inferSelect;
 export type Brand = typeof brands.$inferSelect;
 export type Category = typeof categories.$inferSelect;
@@ -421,3 +477,5 @@ export type ProductVariant = typeof productVariants.$inferSelect;
 export type ProductMedia = typeof productMedia.$inferSelect;
 export type ProductSpecification = typeof productSpecifications.$inferSelect;
 export type StoreSetting = typeof storeSettings.$inferSelect;
+export type Cart = typeof carts.$inferSelect;
+export type CartItem = typeof cartItems.$inferSelect;

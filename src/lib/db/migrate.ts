@@ -66,14 +66,16 @@ async function main() {
           "product_variant_options",
           "product_media",
           "product_specifications",
+          "carts",
+          "cart_items",
         ],
       ],
     );
 
     const found = verify.rows.map((row: { table_name: string }) => row.table_name);
     console.log("Verified tables:", found.join(", "));
-    if (found.length < 16) {
-      console.error("Verification failed: expected core catalog tables.");
+    if (found.length < 18) {
+      console.error("Verification failed: expected core catalog + cart tables.");
       process.exit(1);
     }
   } finally {

@@ -15,7 +15,9 @@
     "db:studio": "drizzle-kit studio",
     "db:check": "tsx src/lib/db/check-connection.ts",
     "db:seed-admin": "tsx src/lib/db/seed-admin.ts",
-    "test": "tsx --test src/lib/catalog/catalog.test.ts"
+    "db:seed-demo": "tsx scripts/seed-demo-storefront.ts",
+    "test": "tsx --test src/lib/catalog/catalog.test.ts src/lib/cart/cart.test.ts",
+    "e2e:phase2": "tsx scripts/e2e-phase2.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
