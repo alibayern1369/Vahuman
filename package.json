@@ -1,8 +1,8 @@
 {
-  "name": "honey",
+  "name": "vahuman",
   "version": "0.1.0",
   "private": true,
-  "description": "Persian-first custom e-commerce platform foundation",
+  "description": "Vahuman (وهومن) — Persian-first custom e-commerce platform foundation",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
+    "db:migrate": "tsx src/lib/db/migrate.ts",
+    "db:migrate:kit": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:check": "tsx src/lib/db/check-connection.ts"
   },
@@ -18,6 +19,7 @@
     "@neondatabase/serverless": "^0.10.4",
     "drizzle-orm": "^0.39.3",
     "next": "15.5.26",
+    "pg": "^8.23.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "zod": "^3.24.2"
@@ -26,6 +28,7 @@
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "dotenv": "^16.4.7",

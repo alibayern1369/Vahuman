@@ -1,5 +1,7 @@
 # Architecture decisions — Phase 0
 
+Brand: وهومن / VAHUMAN (technical: `vahuman`). Admin title: مدیریت وهومن.
+
 ## ORM: Drizzle
 
 Chosen over Prisma for this project because:

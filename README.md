@@ -1,6 +1,6 @@
-# Honey — Persian-first e-commerce foundation
+# Vahuman (وهومن) — Persian-first e-commerce foundation
 
-Custom Next.js storefront and admin platform (not WordPress / WooCommerce).
+Custom Next.js storefront and admin platform for **وهومن / VAHUMAN** (technical slug: `vahuman`). Not WordPress / WooCommerce.
 
 ## Current status (Phase 0)
 
@@ -84,17 +84,19 @@ Generate migrations from the schema:
 pnpm db:generate
 ```
 
-Apply migrations (requires credentials):
+Apply migrations (requires credentials; uses TCP via `pg`):
 
 ```bash
 pnpm db:migrate
 ```
 
-Optional connection smoke test:
+Optional connection smoke test (Neon HTTP, with TCP fallback):
 
 ```bash
 pnpm db:check
 ```
+
+> Note: `pnpm db:migrate:kit` runs `drizzle-kit migrate` (Neon WebSocket). Prefer `pnpm db:migrate` if WebSockets time out on your network.
 
 Phase 0 includes only `schema_health_checks` to verify the migration pipeline.
 

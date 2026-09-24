@@ -16,10 +16,14 @@ export default function HomePage() {
         {appConfig.name}
       </h1>
 
+      <p className="mb-2 text-base font-medium tracking-[0.2em] text-foreground/80">
+        {appConfig.nameLatin}
+      </p>
+
       <p className="mb-10 max-w-2xl text-lg leading-8 text-muted">
-        این صفحه فقط بنیاد توسعه را نشان می‌دهد: Next.js، تایپ‌اسکریپت، Tailwind،
-        پشتیبانی کامل فارسی و راست‌چین. فروشگاه و پنل مدیریت هنوز پیاده‌سازی
-        نشده‌اند.
+        این صفحه فقط بنیاد توسعهٔ فروشگاه «{appConfig.name}» را نشان می‌دهد:
+        Next.js، تایپ‌اسکریپت، Tailwind، پشتیبانی کامل فارسی و راست‌چین. فروشگاه و{" "}
+        {appConfig.adminTitle} هنوز پیاده‌سازی نشده‌اند.
       </p>
 
       <section

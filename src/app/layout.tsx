@@ -17,8 +17,8 @@ export const metadata: Metadata = {
     template: `%s | ${appConfig.name}`,
   },
   description:
-    "پایه فنی فروشگاه اینترنتی سفارشی فارسی — فاز صفر توسعه.",
-  applicationName: appConfig.name,
+    "پایه فنی فروشگاه وهومن (VAHUMAN) — فاز صفر توسعه.",
+  applicationName: appConfig.nameLatin,
 };
 
 export const viewport: Viewport = {
