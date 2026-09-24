@@ -58,14 +58,22 @@ async function main() {
           "categories",
           "products",
           "store_settings",
+          "brands",
+          "attributes",
+          "attribute_values",
+          "product_categories",
+          "product_variants",
+          "product_variant_options",
+          "product_media",
+          "product_specifications",
         ],
       ],
     );
 
     const found = verify.rows.map((row: { table_name: string }) => row.table_name);
     console.log("Verified tables:", found.join(", "));
-    if (found.length < 8) {
-      console.error("Verification failed: expected core Phase 1 tables.");
+    if (found.length < 16) {
+      console.error("Verification failed: expected core catalog tables.");
       process.exit(1);
     }
   } finally {

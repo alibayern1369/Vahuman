@@ -15,6 +15,13 @@
       "when": 1790250006575,
       "tag": "0001_omniscient_roughhouse",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790251800000,
+      "tag": "0002_phase2_catalog",
+      "breakpoints": true
     }
   ]
 }

@@ -14,7 +14,8 @@
     "db:migrate:kit": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:check": "tsx src/lib/db/check-connection.ts",
-    "db:seed-admin": "tsx src/lib/db/seed-admin.ts"
+    "db:seed-admin": "tsx src/lib/db/seed-admin.ts",
+    "test": "tsx --test src/lib/catalog/catalog.test.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",

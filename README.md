@@ -1,116 +1,53 @@
 # Vahuman (وهومن) — Persian-first e-commerce foundation
 
-Custom Next.js storefront and admin platform for **وهومن / VAHUMAN** (technical slug: `vahuman`). Not WordPress / WooCommerce.
+Custom Next.js storefront and admin platform for **وهومن / VAHUMAN** (technical slug: `vahuman`).
 
-## Current status (Phase 1)
+## Current status (Phase 2)
 
 Implemented:
 
-- Next.js App Router + TypeScript + Tailwind CSS
-- Persian / RTL foundation page
-- Neon + Drizzle ORM (auth + catalog + settings schema)
-- Better Auth (email/password, roles: `admin` | `customer`)
-- Protected admin shell at `/admin` (مدیریت وهومن)
-- Admin seed script + store settings defaults
+- Phase 0 foundation + Phase 1 auth/admin shell
+- Full catalog engine: brands, nested categories, attributes/values, products, variants, media refs, specifications
+- Admin CRUD under `/admin/*` with server-side authorization
+- Integer toman pricing, draft/published/archived lifecycle
+- Drizzle migrations on Neon
 
 Not implemented yet:
 
-- Full product CRUD UI
-- Storefront catalog, cart, checkout
-- Card-to-card payment workflow
-- Product importer, AI, SMS, Instagram, image pipeline
-- Customer self-registration / OTP
+- Public storefront catalog pages
+- Cart, checkout, orders, card-to-card payment
+- URL importer, AI, SMS, Instagram
+- Object-storage image pipeline (media stores URL/metadata only)
 
-## Stack
+## Pricing
 
-| Layer | Choice |
-|---|---|
-| Framework | Next.js 15 (App Router) |
-| Language | TypeScript |
-| Styling | Tailwind CSS 4 |
-| Database | Neon PostgreSQL |
-| ORM | Drizzle ORM |
-| Auth | Better Auth |
-| Package manager | pnpm |
-| Hosting target | Vercel (dev/preview; production needs a suitable plan) |
-
-## Prerequisites
-
-- Node.js 20+ (22 LTS recommended)
-- pnpm 9+
-- A Neon project (for database commands)
-
-> **Windows / Node 26 note:** If `pnpm install` fails with `ERR_SSL_TLSV1_ALERT_PROTOCOL_VERSION`, run installs with:
-> `NODE_OPTIONS=--tls-min-v1.0 --tls-max-v1.2`
-
-## Installation
-
-```bash
-pnpm install
-cp .env.example .env.local
-```
-
-Edit `.env.local` and set:
-
-- Neon `DATABASE_URL` / `DATABASE_URL_UNPOOLED`
-- `BETTER_AUTH_SECRET` (32+ random chars)
-- `ADMIN_EMAIL` / `ADMIN_PASSWORD` (for seeding the first admin)
-
-## Environment variables
-
-See `.env.example`. Never commit `.env.local` or real credentials.
+Canonical DB unit: **integer Iranian toman**. Never float. Never trust client-side totals.
 
 ## Local development
 
 ```bash
+pnpm install
+cp .env.example .env.local
+pnpm db:migrate
+pnpm db:seed-admin
 pnpm dev
 ```
 
-- Storefront placeholder: [http://localhost:3000](http://localhost:3000)
-- Admin login: [http://localhost:3000/admin/login](http://localhost:3000/admin/login)
-
 ```bash
-pnpm lint
+pnpm test
 pnpm typecheck
+pnpm lint
 pnpm build
-pnpm start
 ```
 
-## Database
+Admin: http://localhost:3000/admin/login
 
-```bash
-pnpm db:generate
-pnpm db:migrate
-pnpm db:check
-pnpm db:seed-admin
-```
+## Catalog admin routes
 
-`pnpm db:migrate` uses TCP via `pg` (recommended). `pnpm db:migrate:kit` uses drizzle-kit / Neon WebSocket.
-
-## Admin bootstrap
-
-1. Set `BETTER_AUTH_SECRET`, `ADMIN_EMAIL`, and `ADMIN_PASSWORD` in `.env.local`
-2. Run `pnpm db:migrate`
-3. Run `pnpm db:seed-admin`
-4. Open `/admin/login`
-
-Public sign-up stays disabled unless `AUTH_DISABLE_SIGNUP=false`.
-
-## Vercel preview
-
-1. Set the same env vars in the Vercel project
-2. Deploy a preview environment only for testing
-3. Do not treat Vercel Hobby as production-ready for a live commercial store
-
-## Troubleshooting
-
-| Issue | What to try |
-|---|---|
-| SSL / TLS errors on install | Set `NODE_OPTIONS=--tls-min-v1.0 --tls-max-v1.2` |
-| `DATABASE_URL is not configured` | Copy `.env.example` → `.env.local` |
-| `BETTER_AUTH_SECRET` errors | Generate a 32+ char secret and restart `pnpm dev` |
-| Migration WebSocket timeout | Use `pnpm db:migrate` (pg TCP) |
-| Cannot log into admin | Run `pnpm db:seed-admin` after setting admin env vars |
+- `/admin/products`
+- `/admin/categories`
+- `/admin/brands`
+- `/admin/attributes`
 
 ## License
 

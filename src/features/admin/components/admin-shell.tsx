@@ -9,6 +9,8 @@ const navItems = [
   { href: "/admin", label: "داشبورد" },
   { href: "/admin/products", label: "محصولات" },
   { href: "/admin/categories", label: "دسته‌ها" },
+  { href: "/admin/brands", label: "برندها" },
+  { href: "/admin/attributes", label: "ویژگی‌ها" },
   { href: "/admin/settings", label: "تنظیمات" },
 ] as const;
 
