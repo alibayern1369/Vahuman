@@ -1,34 +1,17 @@
 /**
- * Future payment architecture notes (card-to-card — not implemented in Phase 0).
+ * Phase 4 payment architecture (implemented).
  *
- * Workflow:
- * 1. Customer places order → server calculates and stores immutable totals.
- * 2. System issues a unique order reference.
- * 3. Customer views bank card details + exact payable amount.
- * 4. Customer transfers externally and uploads a receipt (+ optional bank ref).
- * 5. Order enters `payment_verification` queue — upload NEVER auto-confirms.
- * 6. Admin independently verifies the bank transfer.
- * 7. Only admin can confirm or reject; fulfillment starts after confirmation.
+ * Card-to-card manual flow — NO payment gateway.
  *
- * Security requirements (later phases):
- * - Server-side total calculation only
- * - Receipts in private object storage (not public URLs by default)
- * - Idempotent confirmation (no duplicate payment confirmations)
- * - Auditable payment/order status history table
- * - Replay protection on receipt submissions
- * - Inventory reservation with TTL / expiration
- * - RBAC: customers cannot change payment status
+ * 1. Checkout resolves cart lines from PostgreSQL (prices/stock/names).
+ * 2. Order + snapshots + inventory reservations created in one transaction.
+ * 3. Customer sees /order/[reference]/payment with exact server total.
+ * 4. Customer uploads receipt → payment_status=receipt_submitted,
+ *    order_status=awaiting_payment_verification (NEVER auto-paid).
+ * 5. Admin verifies independently → verified + paid + reservations committed.
+ * 6. Fulfillment: paid → processing → shipped → delivered.
  *
- * Do not install payment gateway SDKs.
+ * Guest access: high-entropy access token (hashed). Reference alone is insufficient.
+ * Expiration: call expireUnpaidReservations() via cron/CLI — portable, not Vercel-locked.
  */
-
-export const paymentStatuses = [
-  "awaiting_transfer",
-  "receipt_submitted",
-  "under_review",
-  "confirmed",
-  "rejected",
-  "expired",
-] as const;
-
-export type PaymentStatus = (typeof paymentStatuses)[number];
+export { paymentStatuses } from "./architecture-compat";

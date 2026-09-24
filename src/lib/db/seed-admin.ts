@@ -84,6 +84,32 @@ async function main() {
       key: "store.tagline",
       value: JSON.stringify("فروشگاه اینترنتی وهومن"),
     },
+    {
+      key: "payment.cardNumber",
+      value: JSON.stringify("6037990000000000"),
+    },
+    {
+      key: "payment.cardholderName",
+      value: JSON.stringify("وهومن"),
+    },
+    {
+      key: "payment.bankName",
+      value: JSON.stringify(null),
+    },
+    {
+      key: "payment.instructions",
+      value: JSON.stringify(
+        "مبلغ دقیق سفارش را کارت‌به‌کارت واریز کنید و رسید را بارگذاری نمایید. تأیید فقط توسط پشتیبانی انجام می‌شود.",
+      ),
+    },
+    {
+      key: "payment.reservationMinutes",
+      value: JSON.stringify(180),
+    },
+    {
+      key: "shipping.flatRateToman",
+      value: JSON.stringify(0),
+    },
   ];
 
   for (const item of defaults) {

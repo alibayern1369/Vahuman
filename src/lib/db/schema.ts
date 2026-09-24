@@ -479,3 +479,238 @@ export type ProductSpecification = typeof productSpecifications.$inferSelect;
 export type StoreSetting = typeof storeSettings.$inferSelect;
 export type Cart = typeof carts.$inferSelect;
 export type CartItem = typeof cartItems.$inferSelect;
+
+/* -------------------------------------------------------------------------- */
+/* Orders / payments / reservations (Phase 4)                                 */
+/* -------------------------------------------------------------------------- */
+
+export const orderStatusEnum = pgEnum("order_status", [
+  "pending_payment",
+  "awaiting_payment_verification",
+  "payment_rejected",
+  "paid",
+  "processing",
+  "shipped",
+  "delivered",
+  "cancelled",
+  "expired",
+]);
+
+export const paymentStatusEnum = pgEnum("payment_status", [
+  "unpaid",
+  "receipt_submitted",
+  "verified",
+  "rejected",
+]);
+
+export const reservationStatusEnum = pgEnum("reservation_status", [
+  "active",
+  "committed",
+  "released",
+]);
+
+export const orderEventActorEnum = pgEnum("order_event_actor", [
+  "system",
+  "customer",
+  "admin",
+]);
+
+/**
+ * Orders store immutable customer/address/totals snapshots at creation time.
+ * Guest access requires access_token_hash match — never authorize by reference alone.
+ */
+export const orders = pgTable(
+  "orders",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    /** Public human-friendly reference, e.g. VH-20260924-A3F9K2 */
+    reference: text("reference").notNull(),
+    /** SHA-256 hex of high-entropy access token (never store raw token). */
+    accessTokenHash: text("access_token_hash").notNull(),
+    userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
+    cartId: uuid("cart_id").references(() => carts.id, {
+      onDelete: "set null",
+    }),
+    /** Client-supplied UUID preventing duplicate checkout submissions. */
+    checkoutIdempotencyKey: text("checkout_idempotency_key").notNull(),
+    customerFullName: text("customer_full_name").notNull(),
+    customerMobile: text("customer_mobile").notNull(),
+    customerNote: text("customer_note"),
+    shippingProvince: text("shipping_province").notNull(),
+    shippingCity: text("shipping_city").notNull(),
+    shippingAddress: text("shipping_address").notNull(),
+    shippingPostalCode: text("shipping_postal_code").notNull(),
+    subtotalToman: integer("subtotal_toman").notNull(),
+    shippingToman: integer("shipping_toman").notNull().default(0),
+    discountToman: integer("discount_toman").notNull().default(0),
+    totalToman: integer("total_toman").notNull(),
+    currencyUnit: text("currency_unit").notNull().default("toman"),
+    orderStatus: orderStatusEnum("order_status")
+      .notNull()
+      .default("pending_payment"),
+    paymentStatus: paymentStatusEnum("payment_status")
+      .notNull()
+      .default("unpaid"),
+    adminNote: text("admin_note"),
+    trackingCode: text("tracking_code"),
+    reservationExpiresAt: timestamp("reservation_expires_at", {
+      withTimezone: true,
+    }).notNull(),
+    paidAt: timestamp("paid_at", { withTimezone: true }),
+    shippedAt: timestamp("shipped_at", { withTimezone: true }),
+    deliveredAt: timestamp("delivered_at", { withTimezone: true }),
+    cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+    expiredAt: timestamp("expired_at", { withTimezone: true }),
+    paymentVerifiedBy: text("payment_verified_by").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    paymentVerifiedAt: timestamp("payment_verified_at", { withTimezone: true }),
+    paymentRejectionReason: text("payment_rejection_reason"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("orders_reference_uidx").on(table.reference),
+    uniqueIndex("orders_checkout_idempotency_uidx").on(
+      table.checkoutIdempotencyKey,
+    ),
+    index("orders_user_idx").on(table.userId),
+    index("orders_status_idx").on(table.orderStatus),
+    index("orders_payment_status_idx").on(table.paymentStatus),
+    index("orders_mobile_idx").on(table.customerMobile),
+    index("orders_created_idx").on(table.createdAt),
+    index("orders_reservation_expires_idx").on(table.reservationExpiresAt),
+  ],
+);
+
+export const orderItems = pgTable(
+  "order_items",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    orderId: uuid("order_id")
+      .notNull()
+      .references(() => orders.id, { onDelete: "cascade" }),
+    productId: uuid("product_id").references(() => products.id, {
+      onDelete: "set null",
+    }),
+    variantId: uuid("variant_id").references(() => productVariants.id, {
+      onDelete: "set null",
+    }),
+    productNameSnapshot: text("product_name_snapshot").notNull(),
+    productSlugSnapshot: text("product_slug_snapshot").notNull(),
+    variantTitleSnapshot: text("variant_title_snapshot"),
+    skuSnapshot: text("sku_snapshot"),
+    unitPriceToman: integer("unit_price_toman").notNull(),
+    quantity: integer("quantity").notNull(),
+    lineTotalToman: integer("line_total_toman").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index("order_items_order_idx").on(table.orderId)],
+);
+
+/**
+ * Hard stock reservation: quantity is decremented from sellable stock on create.
+ * On release (expire/cancel unpaid): stock restored once. On commit (payment verified): no restore.
+ */
+export const inventoryReservations = pgTable(
+  "inventory_reservations",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    orderId: uuid("order_id")
+      .notNull()
+      .references(() => orders.id, { onDelete: "cascade" }),
+    orderItemId: uuid("order_item_id")
+      .notNull()
+      .references(() => orderItems.id, { onDelete: "cascade" }),
+    productId: uuid("product_id").references(() => products.id, {
+      onDelete: "set null",
+    }),
+    variantId: uuid("variant_id").references(() => productVariants.id, {
+      onDelete: "set null",
+    }),
+    quantity: integer("quantity").notNull(),
+    status: reservationStatusEnum("status").notNull().default("active"),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    releasedAt: timestamp("released_at", { withTimezone: true }),
+    committedAt: timestamp("committed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("inventory_reservations_order_idx").on(table.orderId),
+    index("inventory_reservations_status_idx").on(table.status),
+    index("inventory_reservations_expires_idx").on(table.expiresAt),
+    uniqueIndex("inventory_reservations_item_uidx").on(table.orderItemId),
+  ],
+);
+
+export const paymentReceipts = pgTable(
+  "payment_receipts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    orderId: uuid("order_id")
+      .notNull()
+      .references(() => orders.id, { onDelete: "cascade" }),
+    /** Private object-storage key — never a public URL. */
+    storageKey: text("storage_key").notNull(),
+    mimeType: text("mime_type").notNull(),
+    fileSize: integer("file_size").notNull(),
+    originalFilename: text("original_filename"),
+    transactionReference: text("transaction_reference"),
+    customerNote: text("customer_note"),
+    /** Only one active receipt per order at a time. */
+    isActive: boolean("is_active").notNull().default(true),
+    submittedAt: timestamp("submitted_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("payment_receipts_order_idx").on(table.orderId),
+    uniqueIndex("payment_receipts_storage_key_uidx").on(table.storageKey),
+  ],
+);
+
+/** Immutable append-only audit log for order lifecycle events. */
+export const orderEvents = pgTable(
+  "order_events",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    orderId: uuid("order_id")
+      .notNull()
+      .references(() => orders.id, { onDelete: "cascade" }),
+    eventType: text("event_type").notNull(),
+    fromOrderStatus: text("from_order_status"),
+    toOrderStatus: text("to_order_status"),
+    fromPaymentStatus: text("from_payment_status"),
+    toPaymentStatus: text("to_payment_status"),
+    actorType: orderEventActorEnum("actor_type").notNull().default("system"),
+    actorUserId: text("actor_user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    payload: jsonb("payload").$type<Record<string, unknown>>(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("order_events_order_idx").on(table.orderId),
+    index("order_events_created_idx").on(table.createdAt),
+  ],
+);
+
+export type Order = typeof orders.$inferSelect;
+export type OrderItem = typeof orderItems.$inferSelect;
+export type InventoryReservation = typeof inventoryReservations.$inferSelect;
+export type PaymentReceipt = typeof paymentReceipts.$inferSelect;
+export type OrderEvent = typeof orderEvents.$inferSelect;

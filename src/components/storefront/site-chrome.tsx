@@ -41,7 +41,7 @@ export function StorefrontFooter() {
     <footer className="mt-auto border-t border-border">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-4 py-8 text-sm text-muted sm:px-6">
         <p>{appConfig.name} · {appConfig.nameLatin}</p>
-        <p>فروشگاه اینترنتی — فاز ۳: تجربه خرید عمومی</p>
+        <p>فروشگاه اینترنتی — فاز ۴: سفارش و پرداخت کارت‌به‌کارت</p>
       </div>
     </footer>
   );

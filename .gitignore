@@ -47,6 +47,7 @@ yarn-error.log*
 .tools/
 .turbo/
 drizzle/meta/databases/
+.data/
 
 # logs and dumps
 *.log

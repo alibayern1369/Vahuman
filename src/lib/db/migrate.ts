@@ -68,14 +68,19 @@ async function main() {
           "product_specifications",
           "carts",
           "cart_items",
+          "orders",
+          "order_items",
+          "inventory_reservations",
+          "payment_receipts",
+          "order_events",
         ],
       ],
     );
 
     const found = verify.rows.map((row: { table_name: string }) => row.table_name);
     console.log("Verified tables:", found.join(", "));
-    if (found.length < 18) {
-      console.error("Verification failed: expected core catalog + cart tables.");
+    if (found.length < 23) {
+      console.error("Verification failed: expected Phase 4 order tables.");
       process.exit(1);
     }
   } finally {

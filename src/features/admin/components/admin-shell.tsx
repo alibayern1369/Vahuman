@@ -7,6 +7,7 @@ import { authClient } from "@/lib/auth/client";
 
 const navItems = [
   { href: "/admin", label: "داشبورد" },
+  { href: "/admin/orders", label: "سفارش‌ها" },
   { href: "/admin/products", label: "محصولات" },
   { href: "/admin/categories", label: "دسته‌ها" },
   { href: "/admin/brands", label: "برندها" },

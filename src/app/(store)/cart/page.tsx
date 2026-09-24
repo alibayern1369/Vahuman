@@ -62,9 +62,12 @@ export default async function CartPage() {
               {formatToman(cart.subtotalToman)}
             </span>
           </div>
-          <p className="text-sm text-muted">
-            پرداخت و ثبت سفارش در فاز بعدی اضافه می‌شود.
-          </p>
+          <Link
+            href="/checkout"
+            className="inline-flex w-full items-center justify-center rounded-[var(--radius-lg)] bg-accent px-4 py-3 text-sm font-medium text-accent-foreground"
+          >
+            ادامه جهت تسویه حساب
+          </Link>
         </div>
       )}
     </div>

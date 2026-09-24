@@ -16,8 +16,10 @@
     "db:check": "tsx src/lib/db/check-connection.ts",
     "db:seed-admin": "tsx src/lib/db/seed-admin.ts",
     "db:seed-demo": "tsx scripts/seed-demo-storefront.ts",
-    "test": "tsx --test src/lib/catalog/catalog.test.ts src/lib/cart/cart.test.ts",
-    "e2e:phase2": "tsx scripts/e2e-phase2.ts"
+    "test": "tsx --test src/lib/catalog/catalog.test.ts src/lib/cart/cart.test.ts src/lib/orders/orders.test.ts",
+    "e2e:phase2": "tsx scripts/e2e-phase2.ts",
+    "e2e:phase4": "tsx scripts/e2e-phase4.ts",
+    "orders:expire": "tsx scripts/expire-reservations.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
