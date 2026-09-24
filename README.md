@@ -1,11 +1,13 @@
 # Vahuman (وهومن) — Persian-first e-commerce
 
-## Current status (Phase 4)
+## Current status (Phase 5)
 
-- Checkout, orders, inventory reservation, card-to-card payment
-- Receipt upload (private storage; admin verification required)
-- Admin order management + fulfillment states
-- Guest order access via high-entropy token (reference alone is insufficient)
+- Customer account: `/account`, `/account/login`, `/account/register`
+- Customer orders: `/account/orders`, `/account/orders/[reference]`
+- Guest cart → customer cart merge on login/register
+- Guest orders can be claimed into an account via secure access token
+- Guest checkout still works without an account
+- Phase 4 checkout / card-to-card payment retained
 
 ## Commands
 
@@ -20,22 +22,13 @@ pnpm typecheck
 pnpm lint
 pnpm build
 pnpm e2e:phase4
+pnpm e2e:phase5
 pnpm orders:expire
 ```
 
-## Order reference strategy
-
-Format `VH-YYYYMMDD-XXXXXX` (Tehran date + Crockford Base32). Unique index + retry.
-
-## Reservation expiration
-
-Portable job — not locked to one host:
-
-- CLI: `pnpm orders:expire`
-- HTTP: `POST /api/cron/expire-reservations` with `Authorization: Bearer $CRON_SECRET`
-
 ## Notes
 
+- Customer signup is enabled unless `AUTH_DISABLE_SIGNUP=true`.
+- Role cannot be set from client (`role` input: false); default is `customer`.
 - Prices are integer Iranian toman; totals resolved server-side only.
 - Receipt upload never auto-confirms payment.
-- Local receipt adapter: `.data/private-receipts/` (gitignored). Production object storage still to be wired.

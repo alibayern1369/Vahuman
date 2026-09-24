@@ -21,7 +21,8 @@ export type OrderEventType =
   | "order_delivered"
   | "order_cancelled"
   | "order_expired"
-  | "admin_note_updated";
+  | "admin_note_updated"
+  | "order_claimed_by_customer";
 
 export async function recordOrderEvent(
   tx: Tx | Database,

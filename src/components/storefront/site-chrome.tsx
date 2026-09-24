@@ -1,10 +1,12 @@
 import Link from "next/link";
 
 import { appConfig } from "@/config/app";
+import { getServerSession } from "@/lib/auth/session";
 import { getResolvedCart } from "@/lib/cart/cart";
 
 export async function StorefrontHeader() {
   const cart = await getResolvedCart();
+  const session = await getServerSession();
 
   return (
     <header className="border-b border-border bg-surface/90 backdrop-blur">
@@ -30,6 +32,18 @@ export async function StorefrontHeader() {
               </span>
             ) : null}
           </Link>
+          {session?.user ? (
+            <Link
+              href="/account"
+              className="rounded-[var(--radius-lg)] border border-border px-3 py-1.5 hover:bg-background"
+            >
+              حساب من
+            </Link>
+          ) : (
+            <Link href="/account/login" className="hover:text-accent">
+              ورود
+            </Link>
+          )}
         </nav>
       </div>
     </header>
@@ -41,7 +55,7 @@ export function StorefrontFooter() {
     <footer className="mt-auto border-t border-border">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-4 py-8 text-sm text-muted sm:px-6">
         <p>{appConfig.name} · {appConfig.nameLatin}</p>
-        <p>فروشگاه اینترنتی — فاز ۴: سفارش و پرداخت کارت‌به‌کارت</p>
+        <p>فروشگاه اینترنتی — فاز ۵: حساب مشتری و ادغام سبد</p>
       </div>
     </footer>
   );

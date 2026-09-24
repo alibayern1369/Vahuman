@@ -39,8 +39,9 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
-    // Public customer self-registration stays off until a later phase.
-    disableSignUp: process.env.AUTH_DISABLE_SIGNUP !== "false",
+    // Customer self-registration enabled by default (Phase 5).
+    // Set AUTH_DISABLE_SIGNUP=true to lock public registration.
+    disableSignUp: process.env.AUTH_DISABLE_SIGNUP === "true",
   },
   user: {
     additionalFields: {

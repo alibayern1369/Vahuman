@@ -8,8 +8,9 @@ function hasSessionCookie(request: NextRequest): boolean {
 }
 
 /**
- * Lightweight cookie gate for /admin routes.
- * Full role checks happen in the admin server layout via requireAdminSession().
+ * Lightweight cookie gates:
+ * - /admin → admin login (role checked in layout)
+ * - /account (except login/register) → customer login
  */
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -24,9 +25,22 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  const isAccountPublic =
+    pathname === "/account/login" || pathname === "/account/register";
+
+  if (
+    pathname.startsWith("/account") &&
+    !isAccountPublic &&
+    !hasSessionCookie(request)
+  ) {
+    const loginUrl = new URL("/account/login", request.url);
+    loginUrl.searchParams.set("next", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin", "/admin/:path*"],
+  matcher: ["/admin", "/admin/:path*", "/account", "/account/:path*"],
 };

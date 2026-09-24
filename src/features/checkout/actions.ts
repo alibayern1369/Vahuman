@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { randomUUID } from "node:crypto";
 
 import { getServerSession } from "@/lib/auth/session";
-import { CART_COOKIE, ensureGuestCart, getResolvedCart } from "@/lib/cart/cart";
+import { CART_COOKIE, ensureActiveCart, getResolvedCart } from "@/lib/cart/cart";
 import {
   ORDER_ACCESS_COOKIE,
   parseAccessCookie,
@@ -52,7 +52,7 @@ export async function placeOrderAction(
       return { ok: false, error: "سبد خرید خالی است." };
     }
 
-    const { cartId } = await ensureGuestCart();
+    const { cartId } = await ensureActiveCart();
     const session = await getServerSession();
     const userId = session?.user?.id ?? null;
 
@@ -76,10 +76,10 @@ export async function placeOrderAction(
     }
 
     revalidatePath("/cart");
+    revalidatePath("/account/orders");
     revalidatePath("/", "layout");
     redirect(`/order/${result.reference}/payment`);
   } catch (error) {
-    // Next.js redirect throws; rethrow
     if (
       error &&
       typeof error === "object" &&

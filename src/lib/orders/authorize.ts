@@ -56,5 +56,21 @@ export async function requireOrderAccess(
   if (!ok) {
     throw new Error("FORBIDDEN");
   }
+
+  // Soft-claim: if guest proves access while logged in, attach order to account.
+  const session = await getServerSession();
+  if (session?.user?.id && !order.userId) {
+    const { claimOrderIfAuthorized } = await import("@/lib/orders/claim");
+    const claimed = await claimOrderIfAuthorized({
+      orderId: order.id,
+      userId: session.user.id,
+      accessToken: options?.accessTokenFromQuery,
+    });
+    if (claimed) {
+      const refreshed = await loadOrderByReference(reference);
+      if (refreshed) return refreshed;
+    }
+  }
+
   return order;
 }
