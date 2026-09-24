@@ -2,23 +2,24 @@
 
 Custom Next.js storefront and admin platform for **وهومن / VAHUMAN** (technical slug: `vahuman`). Not WordPress / WooCommerce.
 
-## Current status (Phase 0)
+## Current status (Phase 1)
 
 Implemented:
 
 - Next.js App Router + TypeScript + Tailwind CSS
 - Persian / RTL foundation page
-- Neon + Drizzle ORM wiring and migration skeleton
-- Environment template and security headers
-- Auth / payment / importer / AI architecture notes only
+- Neon + Drizzle ORM (auth + catalog + settings schema)
+- Better Auth (email/password, roles: `admin` | `customer`)
+- Protected admin shell at `/admin` (مدیریت وهومن)
+- Admin seed script + store settings defaults
 
 Not implemented yet:
 
+- Full product CRUD UI
 - Storefront catalog, cart, checkout
-- Admin dashboard
-- Authentication UI
 - Card-to-card payment workflow
 - Product importer, AI, SMS, Instagram, image pipeline
+- Customer self-registration / OTP
 
 ## Stack
 
@@ -29,6 +30,7 @@ Not implemented yet:
 | Styling | Tailwind CSS 4 |
 | Database | Neon PostgreSQL |
 | ORM | Drizzle ORM |
+| Auth | Better Auth |
 | Package manager | pnpm |
 | Hosting target | Vercel (dev/preview; production needs a suitable plan) |
 
@@ -48,16 +50,15 @@ pnpm install
 cp .env.example .env.local
 ```
 
-Edit `.env.local` and set your Neon `DATABASE_URL` (and optionally `DATABASE_URL_UNPOOLED` for migrations).
+Edit `.env.local` and set:
+
+- Neon `DATABASE_URL` / `DATABASE_URL_UNPOOLED`
+- `BETTER_AUTH_SECRET` (32+ random chars)
+- `ADMIN_EMAIL` / `ADMIN_PASSWORD` (for seeding the first admin)
 
 ## Environment variables
 
-See `.env.example`. Required for DB features:
-
-- `DATABASE_URL` — pooled Neon URL for the app runtime
-- `DATABASE_URL_UNPOOLED` — direct URL preferred for migrations
-
-Never commit `.env.local` or real credentials.
+See `.env.example`. Never commit `.env.local` or real credentials.
 
 ## Local development
 
@@ -65,9 +66,8 @@ Never commit `.env.local` or real credentials.
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
-
-Other commands:
+- Storefront placeholder: [http://localhost:3000](http://localhost:3000)
+- Admin login: [http://localhost:3000/admin/login](http://localhost:3000/admin/login)
 
 ```bash
 pnpm lint
@@ -78,47 +78,39 @@ pnpm start
 
 ## Database
 
-Generate migrations from the schema:
-
 ```bash
 pnpm db:generate
-```
-
-Apply migrations (requires credentials; uses TCP via `pg`):
-
-```bash
 pnpm db:migrate
-```
-
-Optional connection smoke test (Neon HTTP, with TCP fallback):
-
-```bash
 pnpm db:check
+pnpm db:seed-admin
 ```
 
-> Note: `pnpm db:migrate:kit` runs `drizzle-kit migrate` (Neon WebSocket). Prefer `pnpm db:migrate` if WebSockets time out on your network.
+`pnpm db:migrate` uses TCP via `pg` (recommended). `pnpm db:migrate:kit` uses drizzle-kit / Neon WebSocket.
 
-Phase 0 includes only `schema_health_checks` to verify the migration pipeline.
+## Admin bootstrap
+
+1. Set `BETTER_AUTH_SECRET`, `ADMIN_EMAIL`, and `ADMIN_PASSWORD` in `.env.local`
+2. Run `pnpm db:migrate`
+3. Run `pnpm db:seed-admin`
+4. Open `/admin/login`
+
+Public sign-up stays disabled unless `AUTH_DISABLE_SIGNUP=false`.
 
 ## Vercel preview
 
-1. Install Vercel CLI (`pnpm add -g vercel`) or connect the repo in the Vercel dashboard.
-2. Set environment variables in the Vercel project (never bake secrets into the client).
-3. Deploy a **preview** environment for testing.
-4. Do not treat Vercel Hobby as production-ready for a live commercial store.
-
-```bash
-vercel
-```
+1. Set the same env vars in the Vercel project
+2. Deploy a preview environment only for testing
+3. Do not treat Vercel Hobby as production-ready for a live commercial store
 
 ## Troubleshooting
 
 | Issue | What to try |
 |---|---|
-| SSL / TLS errors on install | Set `NODE_OPTIONS=--tls-min-v1.0 --tls-max-v1.2` then reinstall |
-| `DATABASE_URL is not configured` | Copy `.env.example` → `.env.local` and add Neon URL |
-| Migration fails | Prefer `DATABASE_URL_UNPOOLED` for `pnpm db:migrate` |
-| Build fails after pull | Run `pnpm install` then `pnpm typecheck` |
+| SSL / TLS errors on install | Set `NODE_OPTIONS=--tls-min-v1.0 --tls-max-v1.2` |
+| `DATABASE_URL is not configured` | Copy `.env.example` → `.env.local` |
+| `BETTER_AUTH_SECRET` errors | Generate a 32+ char secret and restart `pnpm dev` |
+| Migration WebSocket timeout | Use `pnpm db:migrate` (pg TCP) |
+| Cannot log into admin | Run `pnpm db:seed-admin` after setting admin env vars |
 
 ## License
 

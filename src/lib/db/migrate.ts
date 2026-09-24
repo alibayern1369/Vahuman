@@ -46,13 +46,26 @@ async function main() {
       `select table_name
        from information_schema.tables
        where table_schema = 'public'
-         and table_name = 'schema_health_checks'`,
+         and table_name = any($1::text[])
+       order by table_name`,
+      [
+        [
+          "schema_health_checks",
+          "user",
+          "session",
+          "account",
+          "verification",
+          "categories",
+          "products",
+          "store_settings",
+        ],
+      ],
     );
 
-    if (verify.rowCount === 1) {
-      console.log("Verified: public.schema_health_checks exists.");
-    } else {
-      console.error("Verification failed: schema_health_checks not found.");
+    const found = verify.rows.map((row: { table_name: string }) => row.table_name);
+    console.log("Verified tables:", found.join(", "));
+    if (found.length < 8) {
+      console.error("Verification failed: expected core Phase 1 tables.");
       process.exit(1);
     }
   } finally {

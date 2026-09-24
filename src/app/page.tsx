@@ -53,6 +53,15 @@ export default function HomePage() {
         {" · "}
         Mixed text: OK / تأیید
       </p>
+
+      <p className="mt-6 text-sm">
+        <a
+          href="/admin/login"
+          className="font-medium text-accent underline-offset-4 hover:underline"
+        >
+          ورود به {appConfig.adminTitle}
+        </a>
+      </p>
     </main>
   );
 }

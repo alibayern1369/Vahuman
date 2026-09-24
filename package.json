@@ -13,11 +13,13 @@
     "db:migrate": "tsx src/lib/db/migrate.ts",
     "db:migrate:kit": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "db:check": "tsx src/lib/db/check-connection.ts"
+    "db:check": "tsx src/lib/db/check-connection.ts",
+    "db:seed-admin": "tsx src/lib/db/seed-admin.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
-    "drizzle-orm": "^0.39.3",
+    "better-auth": "1.7.5",
+    "drizzle-orm": "^0.45.2",
     "next": "15.5.26",
     "pg": "^8.23.0",
     "react": "19.1.0",
@@ -32,7 +34,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "dotenv": "^16.4.7",
-    "drizzle-kit": "^0.30.4",
+    "drizzle-kit": "^0.31.4",
     "eslint": "^9",
     "eslint-config-next": "15.5.26",
     "tailwindcss": "^4",
