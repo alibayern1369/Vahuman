@@ -188,21 +188,18 @@ export function getPrivateStorage(): PrivateStorage {
   if (cached) return cached;
   const provider = process.env.STORAGE_PROVIDER?.trim().toLowerCase();
   if (provider === "s3") {
-    const ready =
-      process.env.STORAGE_BUCKET &&
-      process.env.STORAGE_ACCESS_KEY &&
-      process.env.STORAGE_SECRET_KEY;
-    cached = ready ? new UnconfiguredS3Storage() : new UnconfiguredS3Storage();
-    // Production S3 adapter intentionally not faked — use local-dev until implemented.
-    if (!ready) {
-      cached = new UnconfiguredS3Storage();
-    } else {
-      // Credentials present but adapter not yet implemented — fail closed.
-      cached = new UnconfiguredS3Storage();
-    }
+    // Production S3 adapter intentionally not faked — fail closed until wired.
+    cached = new UnconfiguredS3Storage();
     return cached;
   }
-  cached = new LocalDevPrivateStorage();
+
+  // On Vercel the filesystem is ephemeral; use /tmp so uploads do not crash.
+  // Persistent object storage (S3) is still required for production reliability.
+  const root =
+    process.env.VERCEL || process.env.VERCEL_ENV
+      ? path.join("/tmp", "vahuman-private-receipts")
+      : path.join(process.cwd(), ".data", "private-receipts");
+  cached = new LocalDevPrivateStorage(root);
   return cached;
 }
 
@@ -213,10 +210,13 @@ export function getStorageStatus(): {
 } {
   const storage = getPrivateStorage();
   if (storage.provider === "local-dev") {
+    const onVercel = Boolean(process.env.VERCEL || process.env.VERCEL_ENV);
     return {
-      provider: "local-dev",
+      provider: onVercel ? "local-tmp-vercel" : "local-dev",
       ready: true,
-      note: "Development filesystem adapter under .data/private-receipts (not for production).",
+      note: onVercel
+        ? "Ephemeral /tmp storage on Vercel — configure S3-compatible STORAGE_* for durable receipts."
+        : "Development filesystem adapter under .data/private-receipts (not for production).",
     };
   }
   return {

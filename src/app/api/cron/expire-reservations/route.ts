@@ -7,11 +7,9 @@ import { expireUnpaidReservations } from "@/lib/orders/expire";
  * Protect with CRON_SECRET header: Authorization: Bearer <secret>
  * Or x-cron-secret: <secret>
  *
- * Example (any scheduler):
- *   curl -X POST "$APP_URL/api/cron/expire-reservations" \
- *     -H "Authorization: Bearer $CRON_SECRET"
+ * Vercel Cron invokes GET; CLI/workers may use POST.
  */
-export async function POST(request: NextRequest) {
+async function handle(request: NextRequest) {
   const secret = process.env.CRON_SECRET;
   if (!secret) {
     return NextResponse.json(
@@ -29,4 +27,12 @@ export async function POST(request: NextRequest) {
 
   const result = await expireUnpaidReservations();
   return NextResponse.json({ ok: true, ...result });
+}
+
+export async function GET(request: NextRequest) {
+  return handle(request);
+}
+
+export async function POST(request: NextRequest) {
+  return handle(request);
 }
